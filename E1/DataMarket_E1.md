@@ -58,12 +58,36 @@ En tant que Data Engineer junior, je dois identifier les sources pertinentes, co
 
 ## 3. Cartographie des sources
 
-| Source                         | Origine | Format         | Utilité principale           |
-| ------------------------------ | ------- | -------------- | ----------------------------- |
-| Commandes e-commerce           | Interne | CSV / SQL      | Suivi des ventes, CA          |
-| Clients                        | Interne | CSV / SQL      | Segmentation, historique      |
-| Catalogue produits (Decathlon) | Externe | CSV (Kaggle)   | Description, prix, catégorie |
-| Avis clients                   | Mixte   | CSV / scraping | Note moyenne, retour client   |
+### Source principale : Dataset Decathlon (Kaggle)
+
+**Lien** : [Decathlon Web Scraped Dataset](https://www.kaggle.com/datasets/nikhilchadha1537/decathlon-web-scraped)
+
+Ce dataset contient des données riches extraites du catalogue Decathlon, comprenant :
+
+| Source / Dimension              | Origine | Format       | Utilité principale                              | Volumétrie |
+| ------------------------------- | ------- | ------------ | ----------------------------------------------- | ---------- |
+| **Catalogue produits**          | Externe | CSV (Kaggle) | Description, nom, URL, couleur                  | 639 lignes |
+| **Référentiel marques**         | Externe | CSV (Kaggle) | Liste des marques (Wedze, Quechua, etc.)        | ~20 marques |
+| **Avis clients (agrégés)**      | Externe | CSV (Kaggle) | Notes moyennes, nombre d'avis par produit       | 639 lignes |
+| **Prix et promotions**          | Externe | CSV (Kaggle) | Prix catalogue vs prix soldé, taux de remise   | 639 lignes |
+| **Informations techniques**     | Externe | CSV (Kaggle) | Composition, origine, instructions (JSON)       | 639 lignes |
+| **Descriptions marketing**      | Externe | CSV (Kaggle) | Bénéfices produits, cas d'usage (liste texte)  | 639 lignes |
+
+### Périmètre et limites
+
+**Données disponibles** :
+
+- Catalogue produit complet avec attributs techniques
+- Avis clients agrégés (note moyenne + nombre d'avis)
+- Données de prix permettant l'analyse des promotions
+- Métadonnées riches (composition, origine, bénéfices)
+
+**Données non disponibles** :
+
+- Transactions / commandes réelles (pas de données internes)
+- Profils clients individuels (anonymisation)
+- Historique temporel des ventes
+- Données de stock en temps réel
 
 ---
 

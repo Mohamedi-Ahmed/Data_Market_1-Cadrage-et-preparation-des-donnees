@@ -1,78 +1,109 @@
-
-# Data Market – Étape E2 : Collecte et nettoyage
+# Data Market – Étape E2 : Collecte, nettoyage et préparation des données
 
 ## Objectif
 
-Transformer les données brutes du fichier `decathlon_raw.csv` (dataset Kaggle) en une structure exploitable pour le Data Market interne : nettoyage, normalisation et export.
+Transformer les données brutes du dataset Decathlon (Kaggle) en une base de données relationnelle propre, normalisée et documentée, prête à être exploitée par les équipes métier (Produit, Marketing, BI).
+
+Ce projet constitue la **couche silver/gold** du Data Market, avec des données nettoyées, enrichies et structurées pour faciliter les analyses.
+
+---
+
+## Quick Start
+
+```bash
+# 1. Installation des dépendances
+pip install -r ../../requirements.txt
+
+# 2. Exécution du pipeline complet
+cd E2/data_market/scripts
+
+python 01_load_and_clean.py
+python 02_split_tables.py
+python 03_business_queries.py
+
+# 3. Résultats disponibles dans E2/data_market/outputs/
+```
+
+---
 
 ## Structure du projet
 
-```
+```text
 /data_market/
 │
-├── data/                     # Fichier brut
-│   └── decathlon_raw.csv
+├── data/                              # Données brutes
+│   └── decathlon_webscrapped_raw.csv  (639 produits Decathlon)
 │
-├── scripts/                  # Scripts de traitement
-│   ├── load_and_clean.py
-│   └── split_tables.py
+├── scripts/                           # Pipeline de traitement
+│   ├── 01_load_and_clean.py          Script de nettoyage et enrichissement
+│   ├── 02_split_tables.py            Script de normalisation BDD
+│   └── 03_business_queries.py        Exemples de requêtes métier
 │
-├── output/                   # Résultats
-│   ├── products_clean.csv
-│   └── data_market.db
+├── outputs/                           # Résultats générés
+│   ├── products_clean.csv            CSV nettoyé et enrichi
+│   ├── data_market.db                Base SQLite normalisée
+│   ├── data_processing.log           Log du nettoyage
+│   └── database_creation.log         Log de la création BDD
 │
-└── README.md                 # Documentation technique
+├── DATA_DICTIONARY.md                 Documentation complète du modèle
+└── README.md                          Documentation technique (ce fichier)
 ```
+
+---
 
 ## Scripts fournis
 
-### `load_and_clean.py`
+### `01_load_and_clean.py`
 
-- Charge le fichier brut
-- Supprime les doublons
-- Nettoie les colonnes et descriptions
-- Vérifie les types et les données manquantes
-- Sauvegarde un fichier `products_clean.csv` dans `output/`
+Nettoyage et enrichissement des données : suppression doublons, gestion valeurs manquantes, conversion types, extraction catégories depuis URL, calcul de métriques (`discount_rate`, `is_on_sale`, `popularity_score`).
 
-### `split_tables.py`
+### `02_split_tables.py`
 
-- Charge `products_clean.csv`
-- Crée une base SQLite `data_market.db`
-- Exporte la table `products` dans la base
+Normalisation de la base de données relationnelle : création de 5 tables (`brands`, `categories`, `products`, `reviews`, `product_attributes`), index et 5 vues métier pour analyses.
+
+**Modèle relationnel (3NF)** :
+
+```text
+brands ──┐
+         ├──> products ──┬──> reviews
+categories ─┘            └──> product_attributes
+```
+
+**Pourquoi 3NF et pas un schéma en étoile ?**
+
+Le modèle relationnel normalisé (3NF) a été choisi car ce projet vise à préparer des données propres et réutilisables, pas à créer un data warehouse pour de l'analytique temps réel. Un schéma en étoile (fact/dimensions) serait pertinent avec des données de ventes historisées et des millions de lignes nécessitant des agrégations rapides. Ici, avec 639 produits statiques, la normalisation permet plus de flexibilité pour des requêtes variées tout en éliminant les redondances.
+
+### `03_business_queries.py`
+
+Exemples de requêtes SQL métier : top produits, promotions, statistiques par catégorie/marque, produits à mettre en avant
+
+---
 
 ## Prérequis
 
-- Python 3.8+
-- Pandas
-- SQLite3 (intégré à Python)
+- **Python 3.8+**
+- **Dépendances** : pandas, numpy, sqlalchemy (voir [requirements.txt](../../requirements.txt))
 
-Installer les dépendances :
+---
 
-```bash
-pip install pandas
-```
+## Source de données
 
-## Exécution
+**Dataset Decathlon Web Scraped** (Kaggle) : 639 produits avec prix, avis clients, attributs techniques.
 
-1. Placer `decathlon_raw.csv` dans `/data/`
-2. Lancer les scripts :
+Lien : [https://www.kaggle.com/datasets/nikhilchadha1537/decathlon-web-scraped](https://www.kaggle.com/datasets/nikhilchadha1537/decathlon-web-scraped)
 
-```bash
-python scripts/load_and_clean.py
-python scripts/split_tables.py
-```
+**Qualité** : 0 doublons, 100% de complétude sur champs critiques, validation prix/ratings
 
-3. Vérifier les fichiers générés dans `/output/`
+---
 
-## Limites
+## Limites et perspectives
 
-- Les avis clients ne sont pas séparés à ce stade
-- Les catégories sont plates (pas d’arbre hiérarchique)
-- Pas de données clients ou commandes intégrées encore
+**Limites** : source unique (Decathlon), données statiques (pas d'historique), catégories simplifiées.
 
-## Étapes suivantes
+**Évolutions** : ajout sources internes (commandes, stock), historisation (SCD Type 2), pipeline automatisé (Airflow), monitoring qualité (Great Expectations)
 
-- Création de vues SQL pour analystes
-- Croisement avec d’autres sources internes
-- Enrichissement via OpenFoodFacts ou d'autres APIs
+---
 
+**Dernière mise à jour** : 2025-07-11
+**Version** : 2.0
+**Statut** : Production-ready ✅

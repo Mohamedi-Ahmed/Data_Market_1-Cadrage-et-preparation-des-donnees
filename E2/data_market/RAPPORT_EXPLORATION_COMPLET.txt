@@ -1,0 +1,139 @@
+==============================================================================================================
+RAPPORT COMPLET D'EXPLORATION - DATA MARKET PROJECT
+==============================================================================================================
+
+Date: 11 novembre 2025
+Objectif: Analyse complete des donnees disponibles pour conception entrepot
+
+
+==============================================================================================================
+1. STRUCTURE DES DOSSIERS ET FICHIERS
+==============================================================================================================
+
+data_market/
+|-- data/decathlon_webscrapped_raw.csv [1.6 MB]
+|-- outputs/
+|   |-- products_clean.csv [1.7 MB]
+|   |-- data_market.db [3.5 MB]
+|   |-- logs
+|-- scripts/
+|   |-- 01_load_and_clean.py
+|   |-- 02_split_tables.py
+|   |-- 03_business_queries.py
+|-- DATA_DICTIONARY.md
+
+Taille totale: ~6.8 MB
+
+
+==============================================================================================================
+2. TYPES DE DONNEES DISPONIBLES
+==============================================================================================================
+
+SOURCE: Web scraping Decathlon.com
+A. PRODUITS: 639 produits, 22 marques, 182 categories
+B. TARIFAIRE: $3.49 - $349.00, 50% en promo
+C. AVIS: 1,485,559 avis, note moy 4.52/5
+D. TECHNIQUES: 4,396 attributs techniques
+E. AUTRES: 113 couleurs, 100% descriptions
+
+
+==============================================================================================================
+3. FORMAT DES FICHIERS
+==============================================================================================================
+
+RAW CSV: 639 x 10 colonnes
+  Colonnes: product_url, product_name, brand, star_rating, number_of_reviews...
+
+CLEAN CSV: 639 x 14 colonnes
+  Colonnes: url, name, brand, rating, review_count, price_mrp, price_sale...
+
+SQLite DB: 5 tables, 5 vues, 7 index
+
+
+==============================================================================================================
+4. VOLUMETRIE
+==============================================================================================================
+   brands                         22 lignes
+   categories                    182 lignes
+   products                      639 lignes
+   reviews                       639 lignes
+   product_attributes          4,396 lignes
+
+
+==============================================================================================================
+5. STATISTIQUES PRINCIPALES
+==============================================================================================================
+
+MARQUES (Top 5):
+  1. Domyos          256 ( 40.1%)
+  2. Forclaz          83 ( 13.0%)
+  3. Decathlon        79 ( 12.4%)
+  4. Quechua          54 (  8.5%)
+  5. Kalenji          32 (  5.0%)
+
+PRIX:
+  Catalogue: 3.49 - 349.00 (moy: 31.81)
+  Vente: 0.99 - 199.00 (moy: 25.93)
+  Remise: 0% - 80.2% (moy: 19.3%)
+
+RATINGS:
+  Note: 3.4 - 5.0 (moy: 4.52)
+  Avis: 4 - 35423 (total: 1,485,559)
+
+
+==============================================================================================================
+6. SCRIPTS DE NETTOYAGE
+==============================================================================================================
+
+01_load_and_clean.py: Charge brut (639x10) -> propre (639x14)
+   - 0 doublons, 0 manquants sur champs critiques
+   - 4 champs calcules (discount, promotion, category, popularity)
+
+02_split_tables.py: Normalise en SQLite
+   - 5 tables, 7 index, 5 vues metier
+
+03_business_queries.py: Exemples requetes SQL
+
+
+==============================================================================================================
+7. QUALITE DES DONNEES
+==============================================================================================================
+
+COMPLETUDE: 100% sur champs critiques
+DOUBLONS: 0 detectes
+VALEURS MANQUANTES: 0 sur colonnes essentielles
+
+A AMELIORER: 182 categories (recommande nettoyage vers 15-20)
+
+
+==============================================================================================================
+8. DONNEES POUR ENTREPOT
+==============================================================================================================
+
+FAIT PRINCIPAL:
+  639 produits + 1.48M avis
+
+DIMENSIONS DISPO:
+  - DIM_PRODUIT: Oui
+  - DIM_MARQUE: Oui (22)
+  - DIM_CATEGORIE: Oui (182, a nettoyer)
+  - DIM_TEMPS: Non
+  - DIM_CLIENT: Non
+
+DONNEES MANQUANTES:
+  - Clients, Commandes, Donnees publiques
+
+
+==============================================================================================================
+9. RECOMMANDATIONS
+==============================================================================================================
+
+PRIORITE 1: Nettoyer 182 categories vers 15-20 categories metier
+PRIORITE 2: Integrer clients, commandes, donnees publiques
+PRIORITE 3: Creer dimension temps (DIM_DATE)
+PRIORITE 4: Adapter architecture entrepot aux nouvelles donnees
+
+
+==============================================================================================================
+FIN DU RAPPORT - Data Market 1 Exploration
+==============================================================================================================
