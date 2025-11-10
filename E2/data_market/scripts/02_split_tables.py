@@ -1,5 +1,3 @@
-
-
 import pandas as pd
 import sqlite3
 import os
@@ -162,18 +160,103 @@ def create_indexes(conn):
     logger.info(f"{len(indexes)} index créés")
 
 def create_business_views(conn):
-    
     cursor = conn.cursor()
 
-    view_catalog = 
+    view_catalog = """
+    CREATE VIEW IF NOT EXISTS view_catalog AS
+    SELECT
+        p.product_id,
+        p.name,
+        b.brand,
+        c.category,
+        p.url,
+        p.colour,
+        p.price_mrp,
+        p.price_sale,
+        CASE
+          WHEN p.price_sale IS NOT NULL AND p.price_sale > 0 THEN p.price_sale
+          ELSE p.price_mrp
+        END AS effective_price,
+        CASE
+          WHEN p.price_mrp IS NOT NULL AND p.price_mrp > 0
+               AND p.price_sale IS NOT NULL AND p.price_sale >= 0
+          THEN ROUND(100.0 * (p.price_mrp - p.price_sale) / p.price_mrp, 2)
+          ELSE NULL
+        END AS computed_discount_pct,
+        p.discount_rate,
+        p.is_on_sale
+    FROM products p
+    LEFT JOIN brands b ON p.brand_id = b.brand_id
+    LEFT JOIN categories c ON p.category_id = c.category_id;
+    """
 
-    view_top_products = 
+    view_top_products = """
+    CREATE VIEW IF NOT EXISTS view_top_products AS
+    SELECT
+        p.product_id,
+        p.name,
+        b.brand,
+        c.category,
+        r.rating,
+        r.review_count,
+        r.popularity_score
+    FROM products p
+    LEFT JOIN reviews r ON r.product_id = p.product_id
+    LEFT JOIN brands b ON p.brand_id = b.brand_id
+    LEFT JOIN categories c ON p.category_id = c.category_id;
+    """
 
-    view_promotions = 
+    view_promotions = """
+    CREATE VIEW IF NOT EXISTS view_promotions AS
+    SELECT *
+    FROM view_catalog
+    WHERE
+        (price_mrp IS NOT NULL AND price_sale IS NOT NULL AND price_sale < price_mrp)
+        OR (discount_rate IS NOT NULL AND discount_rate > 0)
+        OR (is_on_sale = 1);
+    """
 
-    view_category_stats = 
+    view_category_stats = """
+    CREATE VIEW IF NOT EXISTS view_category_stats AS
+    SELECT
+        c.category,
+        COUNT(p.product_id) AS product_count,
+        ROUND(AVG(
+            CASE
+              WHEN p.price_sale IS NOT NULL AND p.price_sale > 0 THEN p.price_sale
+              ELSE p.price_mrp
+            END
+        ), 2) AS avg_effective_price,
+        ROUND(AVG(r.rating), 2) AS avg_rating,
+        SUM(r.review_count) AS total_reviews,
+        MIN(CASE WHEN p.price_sale IS NOT NULL AND p.price_sale > 0 THEN p.price_sale ELSE p.price_mrp END) AS min_price,
+        MAX(CASE WHEN p.price_sale IS NOT NULL AND p.price_sale > 0 THEN p.price_sale ELSE p.price_mrp END) AS max_price
+    FROM categories c
+    LEFT JOIN products p ON p.category_id = c.category_id
+    LEFT JOIN reviews r  ON r.product_id = p.product_id
+    GROUP BY c.category;
+    """
 
-    view_brand_stats = 
+    view_brand_stats = """
+    CREATE VIEW IF NOT EXISTS view_brand_stats AS
+    SELECT
+        b.brand,
+        COUNT(p.product_id) AS product_count,
+        ROUND(AVG(
+            CASE
+              WHEN p.price_sale IS NOT NULL AND p.price_sale > 0 THEN p.price_sale
+              ELSE p.price_mrp
+            END
+        ), 2) AS avg_effective_price,
+        ROUND(AVG(r.rating), 2) AS avg_rating,
+        SUM(r.review_count) AS total_reviews,
+        MIN(CASE WHEN p.price_sale IS NOT NULL AND p.price_sale > 0 THEN p.price_sale ELSE p.price_mrp END) AS min_price,
+        MAX(CASE WHEN p.price_sale IS NOT NULL AND p.price_sale > 0 THEN p.price_sale ELSE p.price_mrp END) AS max_price
+    FROM brands b
+    LEFT JOIN products p ON p.brand_id = b.brand_id
+    LEFT JOIN reviews r  ON r.product_id = p.product_id
+    GROUP BY b.brand;
+    """
 
     views = [
         view_catalog,

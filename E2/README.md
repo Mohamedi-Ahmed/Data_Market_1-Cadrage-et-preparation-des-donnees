@@ -8,7 +8,7 @@ Ce projet constitue la **couche silver/gold** du Data Market, avec des données 
 
 ---
 
-## Quick Start
+## Démarrage
 
 ```bash
 # 1. Installation des dépendances
@@ -42,6 +42,7 @@ python 03_business_queries.py
 ├── outputs/                           # Résultats générés
 │   ├── products_clean.csv            CSV nettoyé et enrichi
 │   ├── data_market.db                Base SQLite normalisée
+│   ├── resultats_requetes_metier.xlsx Résultats des requêtes SQL (Excel)
 │   ├── data_processing.log           Log du nettoyage
 │   └── database_creation.log         Log de la création BDD
 │
@@ -75,14 +76,16 @@ Le modèle relationnel normalisé (3NF) a été choisi car ce projet vise à pr�
 
 ### `03_business_queries.py`
 
-Exemples de requêtes SQL métier : top produits, promotions, statistiques par catégorie/marque, produits à mettre en avant
+Exemples de requêtes SQL métier : top produits, promotions, statistiques par catégorie/marque, produits à mettre en avant.
+
+**Résultats exportés** : fichier Excel `resultats_requetes_metier.xlsx` avec 5 onglets (Top_Produits, Top_Promotions, Top_Categories, Top_Marques, Produits_A_Mettre_En_Avant)
 
 ---
 
 ## Prérequis
 
 - **Python 3.8+**
-- **Dépendances** : pandas, numpy, sqlalchemy (voir [requirements.txt](../../requirements.txt))
+- **Dépendances** : pandas, numpy, openpyxl, sqlalchemy (voir [requirements.txt](../../requirements.txt))
 
 ---
 
@@ -101,9 +104,3 @@ Lien : [https://www.kaggle.com/datasets/nikhilchadha1537/decathlon-web-scraped](
 **Limites** : source unique (Decathlon), données statiques (pas d'historique), catégories simplifiées.
 
 **Évolutions** : ajout sources internes (commandes, stock), historisation (SCD Type 2), pipeline automatisé (Airflow), monitoring qualité (Great Expectations)
-
----
-
-**Dernière mise à jour** : 2025-07-11
-**Version** : 2.0
-**Statut** : Production-ready ✅
